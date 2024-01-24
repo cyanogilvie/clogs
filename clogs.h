@@ -2,6 +2,8 @@
 #define CLOGS_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdatomic.h>
 
 #ifndef CLOGS_FILE
 #define CLOGS_FILE	stdout
@@ -15,24 +17,27 @@
 #define CLOGS_GREENISH	.c=0x0020E020
 #define CLOGS_PURPLEISH	.c=0x00E05070
 
+double clogs_proctime(void);
+double clogs_delta_usec(void);
+
 struct clogs_name_args {
 	const void*		thing;		// Some pointer. Each call for the same address will return the same name, and same colour variant of (r,g,b).
 	uint32_t		c;			// Colour. r << 16 | g << 8 | b
 };
-const char* clogs_name(struct clogs_name_args args);
+const char* clogs_name(struct clogs_name_args);
 #define clogs_name(_t, ...) (clogs_name)((struct clogs_name_args){.c=0xFF000000, .thing=(_t), __VA_ARGS__})
 
 struct clogs_cstr_args {
 	const char*		str;		// Some string. Each call for the same string will return the same colour variant of (r,g,b).
 	uint32_t		c;			// Colour. r << 16 | g << 8 | b
 };
-const char* clogs_cstr(struct clogs_cstr_args args);
+const char* clogs_cstr(struct clogs_cstr_args);
 #define clogs_cstr(_s, ...) (clogs_cstr)((struct clogs_cstr_args){.c=0xFF000000, .str=(_s), __VA_ARGS__})
 
 struct clogs_thread_name_args {
 	uint32_t		c;			// Colour. r << 16 | g << 8 | b
 };
-const char* clogs_thread_name(struct clogs_thread_name_args args);
+const char* clogs_thread_name(struct clogs_thread_name_args);
 #define clogs_thread_name(...) (clogs_thread_name)((struct clogs_thread_name_args){.c=0xFF000000, __VA_ARGS__})
 
 enum clogs_lvl {
@@ -48,7 +53,7 @@ struct clogs_args {
 	const char*		fmt;		// Format string. If NULL, 
 	enum clogs_lvl	lvl;		// Minimum level to log. Defaults to CLOGS_LVL_DBG
 };
-void clogs(struct clogs_args args);
+void clogs(struct clogs_args);
 #define clogs(defs, _args, ...) do {if (defs) {(clogs)((struct clogs_args){.file=stdout, _args}, __VA_ARGS__);}} while(0)
 
 #endif

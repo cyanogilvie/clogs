@@ -1,6 +1,7 @@
 *.swp
 *.o
 *.a
+*.so
 dbg_testex
 prof_testex
 testex

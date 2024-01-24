@@ -321,7 +321,7 @@ static const char* nouns[] = { //<<<
 
 static atomic_uint_fast64_t log_delta_last_nsec = 0;
 
-static inline double log_delta_usec(void) { //<<<
+double clogs_delta_usec(void) { //<<<
 	struct timespec ts;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
 	const uint64_t nsec = ts.tv_sec*1000000000 + ts.tv_nsec;
@@ -330,7 +330,7 @@ static inline double log_delta_usec(void) { //<<<
 }
 
 //>>>
-static inline double proctime(void) { //<<<
+double clogs_proctime(void) { //<<<
 	struct timespec ts;
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
 	return ts.tv_sec + ts.tv_nsec/1e9;
@@ -406,13 +406,6 @@ const char* randwords(intptr_t seedraw) //<<<
 
 //>>>
 static once_flag	autoinit = ONCE_FLAG_INIT;
-const char* clogs_name(const void *const thing) //<<<
-{
-	call_once(&autoinit, init);
-	return thing ? randwords((intptr_t)thing) : "NULL";
-}
-
-//>>>
 static const char* byte_decimals[0x100] = { //<<<
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
 	"11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
@@ -468,17 +461,20 @@ static inline void pick_near(char*restrict* out, uint64_t rand, uint8_t r, uint8
 }
 
 //>>>
-const char* clogs_cname(const void*const thing, const uint8_t r, const uint8_t g, const uint8_t b) //<<<
+const char* (clogs_name)(struct clogs_name_args args) //<<<
 {
 	call_once(&autoinit, init);
 
-	const uint64_t	rand = hash64shift((intptr_t)thing);
+	const uint64_t	rand = hash64shift((intptr_t)args.thing);
 	const int		adj  =  rand      % adjectivesc;
 	const int		noun = (rand>>16) % nounsc;
 
 	const int			outslot = outslot_i++ % STATICBUFS;
 	char*restrict		p = out[outslot];
 	const char*restrict	s;
+	const uint8_t		r = (args.c >> 16) & 0xFF;
+	const uint8_t		g = (args.c >>  8) & 0xFF;
+	const uint8_t		b =  args.c        & 0xFF;
 
 	memcpy(p, FG_PREFIX, sizeof(FG_PREFIX)-1); p += sizeof(FG_PREFIX)-1;
 	pick_near(&p, rand, r, g, b);
@@ -491,27 +487,31 @@ const char* clogs_cname(const void*const thing, const uint8_t r, const uint8_t g
 }
 
 //>>>
-const char* clogs_thread_name() //<<<
+const char* (clogs_thread_name)(struct clogs_thread_name_args args) //<<<
 {
 	static tss_t	key;
 	char*			name = tss_get(key);
+
 	if (name == NULL && thrd_success == tss_create(&key, free)) {
-		name = strdup(clogs_cname((void*)thrd_current(), 0xFF, 0x60, 0x80));
+		name = strdup(clogs_name((void*)thrd_current(), .c = args.c));
 		tss_set(key, name);
 	}
 	return name;
 }
 
 //>>>
-const char* clogs_cstr(const char*const str, const uint8_t r, const uint8_t g, const uint8_t b) //<<<
+const char* (clogs_cstr)(struct clogs_cstr_args args) //<<<
 {
-	const uint64_t		rand = hash64shift((intptr_t)str);
+	const uint64_t		rand = hash64shift((intptr_t)args.str);
 	const int			outslot = outslot_i++ % STATICBUFS;
 	char*restrict		p = out[outslot];
+	const uint8_t		r = (args.c >> 16) & 0xFF;
+	const uint8_t		g = (args.c >>  8) & 0xFF;
+	const uint8_t		b =  args.c        & 0xFF;
 
 	memcpy(p, FG_PREFIX, sizeof(FG_PREFIX)-1); p += sizeof(FG_PREFIX)-1;
 	pick_near(&p, rand, r, g, b);
-	const char*restrict	s = str; while (*s) *p++ = *s++;
+	const char*restrict	s = args.str; while (*s) *p++ = *s++;
 	memcpy(p, NORM, sizeof(NORM)-1); p += sizeof(NORM)-1;
 	*p = '\0';
 	

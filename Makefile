@@ -10,7 +10,7 @@ VALGRIND = valgrind
 DEBUG = 0
 DEFS = 
 
-CFLAGS = -std=gnu17 -fPIC -Wall -Wextra -Werror -Wpointer-arith -Wno-missing-braces -Wno-missing-field-initializers -Wno-unused-parameter -I. -DDEBUG=$(DEBUG) $(DEFS)
+CFLAGS = -std=gnu17 -fPIC -Wall -Wextra -Werror -Wpointer-arith -Wno-missing-braces -Wno-missing-field-initializers -Wno-unused-parameter -Wno-override-init -I. -DDEBUG=$(DEBUG) $(DEFS)
 CFLAGS_DEBUG = -ggdb3 -Og -DPURIFY
 CFLAGS_OPTIMIZE = -ggdb3 -Ofast -march=native -mtune=native -flto
 CFLAGS_PROFILE = -pg
@@ -89,7 +89,7 @@ perfstats: testex
 	sudo perf stat ./$< $(TESTARGS)
 
 tags: *.def *.h *.c Makefile
-	-ctags-exuberant --recurse=yes --langmap=c:+.def *.c *.h *.defs
+	-ctags-exuberant --recurse=yes --langmap=c:+.def *.c *.h *.def
 
 clean:
 	-rm -f core testex dbg_testex prof_testex libclogs.a libclogs_dbg.a libclogs_prof.a libclogs*.so $(OBJS) $(addprefix dbg_,$(OBJS)) $(addprefix prof_,$(OBJS)) tags cachegrind.out gmon.out
@@ -99,13 +99,13 @@ install: libclogs.a libclogs$(VER).so clogs*.def
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	cp libclogs.a $(DESTDIR)$(PREFIX)/lib/
 	cp libclogs$(VER).so $(DESTDIR)$(PREFIX)/lib/
-	cp clogs.h clogs*.defs $(DESTDIR)$(PREFIX)/include/
+	cp clogs.h clogs*.def $(DESTDIR)$(PREFIX)/include/
 
 install_dbg: libclogs_dbg.a clogs*.def
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	cp libclogs_dbg.a $(DESTDIR)$(PREFIX)/lib/
-	cp clogs.h clogs*.defs $(DESTDIR)$(PREFIX)/include/
+	cp clogs.h clogs*.def $(DESTDIR)$(PREFIX)/include/
 
 uninstall:
 	-rm -f $(DESTDIR)$(PREFIX)/lib/libclogs.a
