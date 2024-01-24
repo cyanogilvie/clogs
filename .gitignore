@@ -1,0 +1,12 @@
+*.swp
+*.o
+*.a
+dbg_testex
+prof_testex
+testex
+tags
+perf.data
+perf.data.old
+core
+vgcore.*
+cachegrind.out
