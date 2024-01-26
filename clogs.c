@@ -472,15 +472,22 @@ const char* (clogs_name)(struct clogs_name_args args) //<<<
 	const int			outslot = outslot_i++ % STATICBUFS;
 	char*restrict		p = out[outslot];
 	const char*restrict	s;
-	const uint8_t		r = (args.c >> 16) & 0xFF;
-	const uint8_t		g = (args.c >>  8) & 0xFF;
-	const uint8_t		b =  args.c        & 0xFF;
+	const int			use_colour = (args.c & 0xFF000000) != 0xFF000000;
 
-	memcpy(p, FG_PREFIX, sizeof(FG_PREFIX)-1); p += sizeof(FG_PREFIX)-1;
-	pick_near(&p, rand, r, g, b);
+	if (use_colour) {
+		const uint8_t		r = (args.c >> 16) & 0xFF;
+		const uint8_t		g = (args.c >>  8) & 0xFF;
+		const uint8_t		b =  args.c        & 0xFF;
+
+		memcpy(p, FG_PREFIX, sizeof(FG_PREFIX)-1); p += sizeof(FG_PREFIX)-1;
+		pick_near(&p, rand, r, g, b);
+	}
+
 	s = adjectives[adj]; while (*s) *p++ = *s++;
 	s = nouns[noun];     while (*s) *p++ = *s++;
-	memcpy(p, NORM, sizeof(NORM)-1); p += sizeof(NORM)-1;
+	if (use_colour) {
+		memcpy(p, NORM, sizeof(NORM)-1); p += sizeof(NORM)-1;
+	}
 	*p = '\0';
 	
 	return out[outslot];
