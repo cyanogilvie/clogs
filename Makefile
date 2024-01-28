@@ -5,6 +5,7 @@ VER = 0.1
 
 CC = gcc
 AR = ar
+AR_ECHO = echo
 RANLIB = ranlib
 VALGRIND = valgrind
 DEBUG = 0
@@ -32,7 +33,7 @@ $(C_OBJS): %.o: %.c Makefile
 	$(CC) -c $(CFLAGS) $(CFLAGS_OPTIMIZE) $(PGO) -o $@ $<
 
 libclogs.a: $(OBJS)
-	echo "create $@\n $(foreach mod,$(OBJS),addmod $(mod)\n) save\n end\n" | $(AR) -M
+	$(AR_ECHO) "create $@\n $(foreach mod,$(OBJS),addmod $(mod)\n) save\n end\n" | $(AR) -M
 	$(RANLIB) $@
 
 libclogs$(VER).so: $(OBJS)
@@ -47,7 +48,7 @@ $(addprefix dbg_,$(C_OBJS)): dbg_%.o: %.c Makefile
 	$(CC) -c $(CFLAGS) $(CFLAGS_DEBUG) $(PGO) -o $@ $<
 
 libclogs_dbg.a: $(addprefix dbg_,$(OBJS))
-	echo "create $@\n $(foreach mod,$(addprefix dbg_,$(OBJS)),addmod $(mod)\n) save\n end\n" | $(AR) -M
+	$(AR_ECHO) "create $@\n $(foreach mod,$(addprefix dbg_,$(OBJS)),addmod $(mod)\n) save\n end\n" | $(AR) -M
 	$(RANLIB) $@
 
 dbg_testex: testex.c libclogs_dbg.a
@@ -59,7 +60,7 @@ $(addprefix prof_,$(C_OBJS)): prof_%.o: %.c Makefile
 	$(CC) -c $(CFLAGS) $(CFLAGS_PROFILE) $(PGO) -o $@ $<
 
 libclogs_prof.a: $(addprefix prof_,$(OBJS))
-	echo "create $@\n $(foreach mod,$(addprefix prof_,$(OBJS)),addmod $(mod)\n) save\n end\n" | $(AR) -M
+	$(AR_ECHO) "create $@\n $(foreach mod,$(addprefix prof_,$(OBJS)),addmod $(mod)\n) save\n end\n" | $(AR) -M
 	$(RANLIB) $@
 
 prof_testex: testex.c libclogs_prof.a
