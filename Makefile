@@ -11,6 +11,10 @@ VALGRIND = valgrind
 DEBUG = 0
 DEFS = 
 
+ifeq ($(shell echo "foo\nbar" | wc -l), 1)
+AR_ECHO += -e
+endif
+
 CFLAGS = -std=gnu17 -fPIC -Wall -Wextra -Werror -Wpointer-arith -Wno-missing-braces -Wno-missing-field-initializers -Wno-unused-parameter -Wno-override-init -I. -DDEBUG=$(DEBUG) $(DEFS)
 CFLAGS_DEBUG = -ggdb3 -Og -DPURIFY
 CFLAGS_OPTIMIZE = -ggdb3 -Ofast -march=native -mtune=native -flto
